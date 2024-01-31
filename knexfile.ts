@@ -1,3 +1,4 @@
+import { Knex } from "knex";
 import dotenv from "dotenv";
 import * as path from "path";
 dotenv.config();
@@ -6,7 +7,7 @@ const BASE_PATH = path.join(__dirname, "src", "resources", "db");
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-module.exports = {
+const knexConfig: Record<string, Knex.Config> = {
   test: {
     client: "pg",
     connection: `${process.env.DATABASE_URL}_test`,
@@ -48,3 +49,5 @@ module.exports = {
     },
   },
 };
+
+export default knexConfig;

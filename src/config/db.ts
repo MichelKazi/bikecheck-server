@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const connection = require("./knexfile")[process.env.NODE_ENV || "development"];
-const database = require("knex")(connection);
+import knexConfig from "../../knexfile";
+import knex from "knex";
+const connection = knexConfig[process.env.NODE_ENV || "development"];
+const db = knex(connection);
 
-export default database;
+export default db;
