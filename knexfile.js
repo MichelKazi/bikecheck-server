@@ -1,4 +1,5 @@
-// Update with your config settings.
+/* eslint @typescript-eslint/no-var-requires: "off" */
+require("dotenv").config();
 
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
@@ -6,7 +7,7 @@
 module.exports = {
   development: {
     client: "pg",
-    connection: "postgres://localhost/bikecheck",
+    connection: process.env.DATABASE_URL,
   },
 
   production: {

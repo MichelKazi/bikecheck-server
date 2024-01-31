@@ -4,22 +4,18 @@
  */
 exports.up = function(knex) {
   return knex.schema
-    .createTableIfNotExists("profile", (table) => {
-      table
-        .uuid("id", { primaryKey: true })
-        .defaultTo(knex.raw("uuid_generate_v4()"));
+    .createTable("profile", (table) => {
+      table.uuid("id", { primaryKey: true });
 
       table.string("username");
       table.string("passwordHash");
     })
-    .createTableIfNotExists("bike", (table) => {
-      table
-        .uuid("id", { primaryKey: true })
-        .defaultTo(knex.raw("uuid_generate_v4()"));
+    .createTable("bike", (table) => {
+      table.uuid("id", { primaryKey: true });
 
       table
-        .foreign("profile_id")
-        .references("profile.id")
+        .uuid("profile_id")
+        .references("id")
         .inTable("profile")
         .onDelete("CASCADE");
 
@@ -28,13 +24,11 @@ exports.up = function(knex) {
       table.string("type");
       table.integer("year");
     })
-    .createTableIfNotExists("component", (table) => {
-      table
-        .uuid("id", { primaryKey: true })
-        .defaultTo(knex.raw("uuid_generate_v4()"));
+    .createTable("component", (table) => {
+      table.uuid("id", { primaryKey: true });
 
       table
-        .foreign("bike_id")
+        .uuid("bike_id")
         .references("id")
         .inTable("bike")
         .onDelete("CASCADE");
@@ -55,7 +49,7 @@ exports.up = function(knex) {
  */
 exports.down = function(knex) {
   return knex.schema
-    .dropTableIfExists("profile")
-    .dropTableIfExists("bike")
-    .dropTableIfExists("component");
+    .dropTable("profile")
+    .dropTable("bike")
+    .dropTable("component");
 };
