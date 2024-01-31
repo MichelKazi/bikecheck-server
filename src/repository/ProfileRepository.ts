@@ -1,14 +1,18 @@
-import db from "../config/db";
+import { db } from "../config/db";
 import { Profile } from "../models/";
+import { ProfileDto } from "../models/Profile/Profile";
 
-const createProfile = async (profileData: Profile) => {
-  const [userId] = await db("profile").insert(profileData).returning("id");
-  return userId;
+const profileRepository = db.getRepository(Profile);
+
+const createProfile = async (profileDto: ProfileDto) => {
+  const existingProfile = await profileRepository.findOneBy({
+    username: profileDto.username,
+  });
+  if (existingProfile)
+    throw new Error(`Profile ${profileDto.username} already exists`);
+
+  const newProfile = new Profile(profileDto);
+  await profileRepository.create(newProfile);
 };
 
-const fetchProfileById = async (profileId: string) => {
-  const [profile] = await db("profile").where({ id: profileId }).first();
-  return profile as Profile;
-};
-
-export { createProfile, fetchProfileById };
+export { createProfile };
