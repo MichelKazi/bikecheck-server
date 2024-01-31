@@ -10,19 +10,19 @@ exports.seed = async function(knex) {
   await knex("profile").insert([
     {
       id: crypto.randomUUID(),
-      userName: "user_01",
+      username: "user_01",
       email: "user_01@email.com",
       passwordHash: "12345",
     },
     {
       id: crypto.randomUUID(),
-      userName: "user_02",
+      username: "user_02",
       email: "user_02@email.com",
       passwordHash: "12345",
     },
     {
       id: crypto.randomUUID(),
-      userName: "user_03",
+      username: "user_03",
       email: "user_03@email.com",
       passwordHash: "12345",
     },

@@ -8,6 +8,7 @@ exports.up = function(knex) {
       table.uuid("id", { primaryKey: true });
 
       table.string("username");
+      table.string("email");
       table.string("passwordHash");
     })
     .createTable("bike", (table) => {
@@ -49,7 +50,7 @@ exports.up = function(knex) {
  */
 exports.down = function(knex) {
   return knex.schema
-    .dropTable("profile")
+    .dropTable("component")
     .dropTable("bike")
-    .dropTable("component");
+    .dropTable("profile");
 };
