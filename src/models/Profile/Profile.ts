@@ -4,7 +4,9 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from "typeorm";
+import { Bike } from "../Bike/Bike";
 
 enum Role {
   Admin = "ADMIN",
@@ -14,27 +16,30 @@ enum Role {
 @Entity()
 class Profile {
   @PrimaryGeneratedColumn()
-  private id: number;
+  id: number;
 
   @Column({
     length: 100,
   })
-  private username: string;
+  username: string;
 
   @Column("text")
-  private email: string;
+  email: string;
 
   @Column("text")
-  private role: Role;
+  role: Role;
 
   @Column("text")
-  private passwordHash: string;
+  passwordHash: string;
+
+  @OneToMany(() => Bike, (bike: Bike) => bike.profile)
+  bikes: Bike[];
 
   @CreateDateColumn({ type: "timestamp" })
-  private createdAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ type: "timestamp" })
-  private updatedAt: Date;
+  updatedAt: Date;
 
   constructor(profileDto: ProfileDto) {
     this.id = profileDto?.id;
@@ -51,14 +56,7 @@ interface ProfileDto {
   email: string;
   role: Role;
   passwordHash: string;
+  bikes: Bike[];
 }
-
-const dto: ProfileDto = {
-  id: 1,
-  username: "foo",
-  email: "foo",
-  role: Role.Admin,
-  passwordHash: "foo",
-};
 
 export { Profile, ProfileDto };

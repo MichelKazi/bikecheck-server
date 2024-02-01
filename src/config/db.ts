@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Profile } from "../models";
+import { Bike, Component, Profile } from "../models";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -9,7 +9,7 @@ const dbUrl = `${process.env.DATABASE_URL}${process.env.ENV === "TEST" ? "_test"
 const AppDataSource = new DataSource({
   type: "postgres",
   url: dbUrl,
-  entities: [Profile],
+  entities: [Profile, Bike, Component],
   synchronize: true,
   logging: false,
 });

@@ -1,57 +1,61 @@
 import { BikeType } from "../enums";
-import { Component } from "../Component/Component";
-import { Knex } from "knex";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm";
+import { Profile, Component } from "..";
 
-interface Bike {
-  id: string;
-  profileId: string;
+@Entity()
+class Bike {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column("text")
+  make: string;
+
+  @Column("text")
+  model: string;
+
+  @Column("integer")
+  year: number;
+
+  @Column("text")
+  type: BikeType;
+
+  @ManyToOne(() => Profile, (profile: Profile) => profile.bikes)
+  profile: Profile;
+
+  @OneToMany(() => Component, (component: Component) => component.bike)
+  components: Component[];
+
+  @CreateDateColumn({ type: "timestamp" })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: "timestamp" })
+  updatedAt: Date;
+
+  constructor(bikeDto: BikeDto) {
+    this.id = bikeDto?.id;
+    this.profile = bikeDto.profile;
+    this.make = bikeDto.make;
+    this.model = bikeDto.model;
+    this.year = bikeDto.year;
+    this.type = bikeDto.type;
+  }
+}
+
+interface BikeDto {
+  id: number;
+  profile: Profile;
   make: string;
   model: string;
   year: number;
   type: BikeType;
-  Components: Component[];
 }
 
-const createBikeTable = (knex: Knex) => {
-  knex.schema
-    .createTable("profile", (table) => {
-      table.uuid("id", { primaryKey: true });
-
-      table.string("username");
-      table.string("email");
-      table.string("passwordHash");
-    })
-    .createTable("bike", (table) => {
-      table.uuid("id", { primaryKey: true });
-
-      table
-        .uuid("profile_id")
-        .references("id")
-        .inTable("profile")
-        .onDelete("CASCADE");
-
-      table.string("make");
-      table.string("model");
-      table.string("type");
-      table.integer("year");
-    })
-    .createTable("component", (table) => {
-      table.uuid("id", { primaryKey: true });
-
-      table
-        .uuid("bike_id")
-        .references("id")
-        .inTable("bike")
-        .onDelete("CASCADE");
-
-      table.string("type");
-      table.float("status");
-      table.date("lastServiced");
-      table.string("brand");
-      table.string("model");
-      table.integer("mileage").unsigned();
-      table.integer("battery").unsigned();
-    });
-};
-
-export { Bike, createBikeTable };
+export { Bike, BikeDto };

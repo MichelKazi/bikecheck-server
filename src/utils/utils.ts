@@ -10,8 +10,9 @@ const Getters =
       return class extends constructor {
         constructor(...args: any[]) {
           super(...args);
-          const props = Object.keys(this);
-          props.forEach((prop: string) => {
+          const props = Reflect.ownKeys(this);
+          props.forEach((prop: string | symbol) => {
+            if (typeof prop === "symbol") return;
             const capitalizedKey = capitalize(prop);
             const methodName = `get${capitalizedKey}`;
             Object.defineProperty(this, methodName, {
@@ -22,36 +23,15 @@ const Getters =
       };
     };
 
-const getter = (
-  target: any,
-  propertyKey: string | symbol,
-  descriptor: PropertyDescriptor,
-): any => {
-  if (typeof propertyKey === "symbol") propertyKey.toString();
-  const propertyName = propertyKey as string;
-  const methodName = `get${capitalize(propertyName)}`;
-  Object.defineProperty(target);
-};
-
-const setter = (
-  target: any,
-  propertyKey: string | symbol,
-  descriptor: PropertyDescriptor,
-): any => {
-  if (typeof propertyKey === "symbol") propertyKey.toString();
-  const propertyName = propertyKey as string;
-  const methodName = `get${capitalize(propertyName)}`;
-  target[methodName] = (value: any) => (target[propertyName] = value);
-};
-
 const Setters =
   () =>
     <T extends { new(...args: any[]): {} }>(constructor: T) => {
       return class extends constructor {
         constructor(...args: any[]) {
           super(...args);
-          const props = Object.keys(this);
-          props.forEach((prop: string) => {
+          const props = Reflect.ownKeys(this);
+          props.forEach((prop: string | symbol) => {
+            if (typeof prop === "symbol") return;
             const capitalizedKey = capitalize(prop);
             const methodName = `set${capitalizedKey}`;
             Object.defineProperty(this, methodName, {
