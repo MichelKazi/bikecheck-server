@@ -1,12 +1,5 @@
-import { Profile, createProfileTable } from "./Profile/Profile";
-import { Bike, createBikeTable } from "./Bike/Bike";
-import { Component, createComponentTable } from "./Component/Component";
+import { Profile } from "./Profile/Profile";
+import { Bike } from "./Bike/Bike";
+import { Component } from "./Component/Component";
 
-export {
-  Profile,
-  Bike,
-  Component,
-  createProfileTable,
-  createBikeTable,
-  createComponentTable,
-};
+export { Profile, Bike, Component };

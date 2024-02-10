@@ -1,10 +1,9 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Bike, Component, Profile } from "../models";
-import dotenv from "dotenv";
-dotenv.config();
+import Env from "./env";
 
-const dbUrl = `${process.env.DATABASE_URL}${process.env.ENV === "TEST" ? "_test" : ""}`;
+const dbUrl = `${Env.DATABASE_URL}${Env.NODE_ENV === "TEST" ? "_test" : ""}`;
 
 const AppDataSource = new DataSource({
   type: "postgres",
@@ -17,7 +16,7 @@ const AppDataSource = new DataSource({
 AppDataSource.initialize()
   .then(() => {
     console.log(
-      `Data source ${process.env.DB_NAME} initialized on port ${process.env.DB_PORT}`,
+      `Data source ${Env.DATABASE_NAME} initialized on port ${Env.DATABASE_PORT}`,
     );
   })
   .catch((error) => console.log(error));

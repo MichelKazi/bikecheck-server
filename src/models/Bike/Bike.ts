@@ -16,6 +16,9 @@ class Bike {
   id: number;
 
   @Column("text")
+  name: string;
+
+  @Column("text")
   make: string;
 
   @Column("text")
@@ -38,24 +41,17 @@ class Bike {
 
   @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
-
-  constructor(bikeDto: BikeDto) {
-    this.id = bikeDto?.id;
-    this.profile = bikeDto.profile;
-    this.make = bikeDto.make;
-    this.model = bikeDto.model;
-    this.year = bikeDto.year;
-    this.type = bikeDto.type;
-  }
 }
 
 interface BikeDto {
-  id: number;
-  profile: Profile;
-  make: string;
-  model: string;
-  year: number;
-  type: BikeType;
+  id?: number;
+  name?: string;
+  profile?: Profile;
+  components?: Component[];
+  make?: string;
+  model?: string;
+  year?: number;
+  type?: BikeType;
 }
 
 export { Bike, BikeDto };

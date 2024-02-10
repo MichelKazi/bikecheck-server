@@ -1,42 +1,63 @@
 import { db } from "../config/db";
-import { Bike, Component } from "../models";
-import { BikeDto } from "../models/Bike/Bike";
+import { Component } from "../models";
 import { ComponentDto } from "../models/Component/Component";
 
-const componentRepository = db.getRepository(Component);
+const componentRepositoryBase = db.getRepository(Component);
 
-const findComponentsByBike = async (bikeDto: BikeDto) => {
-  const bike = new Bike(bikeDto);
-  return await componentRepository.findBy({ bike });
+const ComponentRepository = {
+  findAllByBike: async (bikeId: number): Promise<Component[]> => {
+    return await componentRepositoryBase.find({
+      where: {
+        bike: {
+          id: bikeId,
+        },
+      },
+    });
+  },
+
+  findOneById: async (id: number): Promise<Component | null> => {
+    return await componentRepositoryBase.findOneById(id);
+  },
+
+  create: async (componentDto: ComponentDto): Promise<Component | null> => {
+    const exists = await componentRepositoryBase.findOne({
+      where: {
+        ...componentDto,
+        bike: {
+          id: componentDto.bike.id,
+        },
+      },
+    });
+    if (exists) {
+      console.error(`Component ${componentDto.type} already exists`);
+      return null;
+    }
+    const component = componentRepositoryBase.create(componentDto);
+    return await componentRepositoryBase.save(component);
+  },
+
+  update: async (componentDto: ComponentDto): Promise<Component | null> => {
+    const component = await componentRepositoryBase.findOneById(
+      componentDto.id,
+    );
+    if (!component) {
+      throw new Error(`Component: ${componentDto.id} not found`);
+      return null;
+    }
+    componentRepositoryBase.merge(component, componentDto);
+
+    return await componentRepositoryBase.save(component);
+  },
+
+  remove: async (componentDto: ComponentDto): Promise<boolean> => {
+    const exists = await componentRepositoryBase.findOneById(componentDto.id);
+    if (!exists) {
+      console.error(`Component: ${componentDto.id} not found`);
+      return false;
+    }
+    await componentRepositoryBase.remove(exists);
+    return true;
+  },
 };
 
-const updateComponent = async (componentDto: ComponentDto) => {
-  const componentToUpdate = await componentRepository.findBy({
-    id: componentDto.id,
-  });
-  if (!componentToUpdate)
-    throw new Error(`Component ${componentDto.id} not found`);
-  const updatedcomponent = new Component(componentDto);
-  return await componentRepository.save(updatedcomponent);
-};
-
-const deleteComponent = async (componentDto: ComponentDto) => {
-  const componentToDelete = await componentRepository.findBy({
-    id: componentDto.id,
-  });
-  if (!componentToDelete)
-    throw new Error(`Component ${componentDto.id} not found`);
-  return await componentRepository.remove(componentToDelete);
-};
-
-const findComponentById = async (componentId: number) => {
-  const component = await componentRepository.findOneBy({ id: componentId });
-  return component;
-};
-
-export {
-  findComponentById,
-  findComponentsByBike,
-  deleteComponent,
-  updateComponent,
-};
+export default ComponentRepository;

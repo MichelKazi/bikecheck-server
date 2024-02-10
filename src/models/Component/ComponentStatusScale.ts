@@ -1,5 +1,5 @@
 export const ComponentStatusScale = {
-  NEW: 10,
-  WORN: 5,
-  NEEDS_REPLACEMENT: 1,
+  NEW: 100,
+  WORN: 50,
+  NEEDS_REPLACEMENT: 10,
 };

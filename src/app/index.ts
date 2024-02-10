@@ -1,16 +1,22 @@
-import express, { Request, Response, Application } from "express";
+import { Hono } from "hono";
+import { prettyJSON } from "hono/pretty-json";
+import { logger } from "hono/logger";
+import { stravaWebhook } from "../routes/webhook/Strava.webhook";
+import { stravaAuthRouter } from "../routes/Auth/strava.auth";
 
-const app: Application = express();
-const port = process.env.PORT || 1337;
+const app = new Hono();
+app.use("*", prettyJSON());
+app.use("*", logger());
 
-app.get("/", (req: Request, res: Response) => {
-  res.json({
-    message: "Hello world!",
+// Initialize routes
+app.route("/webhook", stravaWebhook);
+app.route("/auth", stravaAuthRouter);
+
+app.get("/", (ctx) => {
+  const name = ctx.req.query("name") ?? "bitch";
+  return ctx.json({
+    message: `Hello ${name}!`,
   });
-});
-
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
 });
 
 export default app;
