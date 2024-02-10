@@ -1,10 +1,11 @@
 import axios from "axios";
 import Env from "../config/env";
-import { Profile, ProfileDto } from "../models/Profile/Profile";
+import { Profile } from "../models/Profile/Profile";
 import { ProfileService } from "../service/ProfileService";
 import { StravaAuthDto } from "../dto/StravaAuthDto";
 
 const stravaAuthResource = "https://www.strava.com/oauth/token";
+const stravaApiV3BaseResource = "https://www.strava.com/api/v3";
 
 const stravaClientConfig = {
   client_id: Env.STRAVA_CLIENT_ID,
@@ -25,15 +26,15 @@ export const authorizeStravaUser = async (
     return await ProfileService.updateStravaAuthOrCreateProfile(authPayload);
   } catch (error) {
     console.log("Failed to authenticate with Strava");
-    console.error(error);
     return null;
   }
 };
 
-export const refreshAccessToken = async (
-  profileDto: ProfileDto,
-): Promise<void> => {
-  const { strava_auth_expires_at } = profileDto;
+export const getOrRefreshAccessToken = async (
+  profile: Profile,
+): Promise<string> => {
+  const strava_auth_expires_at = profile?.strava_auth_expires_at;
+  const refresh_token = profile?.strava_refresh_token;
   if (
     strava_auth_expires_at &&
     strava_auth_expires_at <= Math.floor(Date.now() / 1000)
@@ -42,13 +43,35 @@ export const refreshAccessToken = async (
       const authResponse = await axios.post(stravaAuthResource, {
         ...stravaClientConfig,
         grant_type: "refresh_token",
-        refresh_token: profileDto.strava_refresh_token,
+        refresh_token: refresh_token,
       });
       const authPayload = authResponse.data;
-      await ProfileService.updateStravaAuthOrCreateProfile(authPayload);
+      const profile: Profile | null =
+        await ProfileService.updateStravaAuthOrCreateProfile(authPayload);
+
+      return profile?.strava_access_token ?? "";
     } catch (error) {
       console.error("Failed to refresh Strava auth", error);
-      throw new Error("Token refresh failed");
+      return "";
     }
+  }
+  return profile?.strava_access_token;
+};
+
+export const getStravaActivityById = async (
+  activityId: number,
+  accessToken: string,
+): Promise<void> => {
+  try {
+    console.log(activityId);
+    const response = await axios.get(
+      `${stravaApiV3BaseResource}/activities/${activityId}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
+    console.log(response);
+  } catch (error) {
+    console.error(`Failed to fetch activity ${activityId}: ${error}`);
   }
 };
