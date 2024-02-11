@@ -3,20 +3,30 @@ import Env from "../../config/env";
 import { StravaWebhookEventDTO } from "../../dto/StravaWebhookDto";
 import { ProfileService } from "../../service/ProfileService";
 import { getStravaActivityById } from "../../client/StravaClient";
+import { ProfileDto } from "../../models/Profile/Profile";
 const stravaWebhook = new Hono();
 
 const handleActivityUpdate = async (ctx: Context) => {
   const event: StravaWebhookEventDTO = await ctx.req.json();
   const { object_id, owner_id } = event;
-  const accessToken =
-    (await ProfileService.getProfileStravaAccessToken(owner_id)) ?? "";
-
-  await getStravaActivityById(object_id, accessToken);
-  ctx.status(200);
-  return ctx.json({
-    message: "EVENT_RECEIVED",
-    data: event,
-  });
+  const authorizedProfile: ProfileDto | null =
+    await ProfileService.getProfileByStravaId(owner_id);
+  try {
+    const accessToken = authorizedProfile?.strava_access_token;
+    if (!accessToken) {
+      ctx.status(404);
+      return ctx.text(`${owner_id} not found`);
+    }
+    await getStravaActivityById(object_id, accessToken);
+    ctx.status(200);
+    return ctx.json({
+      message: "EVENT_RECEIVED",
+      data: event,
+    });
+  } catch (error) {
+    ctx.status(500);
+    ctx.text(`Failed to handle activity update: \n${error}`);
+  }
 };
 
 const handleWebhookCallback = async (ctx: Context) => {

@@ -1,8 +1,10 @@
 import { Hono } from "hono";
+import { jwt } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
 import { logger } from "hono/logger";
 import { stravaWebhook } from "../routes/webhook/Strava.webhook";
 import { stravaAuthRouter } from "../routes/Auth/strava.auth";
+import Env from "../config/env";
 
 const app = new Hono();
 app.use("*", prettyJSON());
@@ -17,6 +19,18 @@ app.get("/", (ctx) => {
   return ctx.json({
     message: `Hello ${name}!`,
   });
+});
+
+app.use(
+  "/secret/*",
+  jwt({
+    secret: Env.JWT_SECRET,
+  }),
+);
+
+app.get("/secret/page", (ctx) => {
+  const payload = ctx.get("jwtPayload");
+  return ctx.json(payload);
 });
 
 export default app;

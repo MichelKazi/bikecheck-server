@@ -9,6 +9,7 @@ const Env = {
   DATABASE_HOST: process.env.DATABASE_HOST,
   DATABASE_PORT: process.env.DATABASE_PORT,
   NODE_ENV: process.env.NODE_ENV,
+  JWT_SECRET: process.env.JWT_SECRET || "",
   STRAVA_API_KEY: process.env.STRAVA_API_KEY,
   STRAVA_VERIFY_TOKEN: process.env.STRAVA_VERIFY_TOKEN,
   STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,

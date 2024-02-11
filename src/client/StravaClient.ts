@@ -1,6 +1,6 @@
 import axios from "axios";
 import Env from "../config/env";
-import { Profile } from "../models/Profile/Profile";
+import { Profile, ProfileDto } from "../models/Profile/Profile";
 import { ProfileService } from "../service/ProfileService";
 import { StravaAuthDto } from "../dto/StravaAuthDto";
 
@@ -30,9 +30,9 @@ export const authorizeStravaUser = async (
   }
 };
 
-export const getOrRefreshAccessToken = async (
+export const refreshProfileAccessToken = async (
   profile: Profile,
-): Promise<string> => {
+): Promise<ProfileDto | null> => {
   const strava_auth_expires_at = profile?.strava_auth_expires_at;
   const refresh_token = profile?.strava_refresh_token;
   if (
@@ -49,13 +49,13 @@ export const getOrRefreshAccessToken = async (
       const profile: Profile | null =
         await ProfileService.updateStravaAuthOrCreateProfile(authPayload);
 
-      return profile?.strava_access_token ?? "";
+      return profile?.toDto() || null;
     } catch (error) {
       console.error("Failed to refresh Strava auth", error);
-      return "";
+      return null;
     }
   }
-  return profile?.strava_access_token;
+  return profile?.toDto();
 };
 
 export const getStravaActivityById = async (

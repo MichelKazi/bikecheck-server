@@ -1,4 +1,4 @@
-import { getOrRefreshAccessToken } from "../client/StravaClient";
+import { refreshProfileAccessToken } from "../client/StravaClient";
 import { StravaAuthDto } from "../dto/StravaAuthDto";
 import { Profile, ProfileDto } from "../models/Profile/Profile";
 import ProfileRepository from "../repository/ProfileRepository";
@@ -7,16 +7,16 @@ const getAllProfiles = async (): Promise<Profile[]> => {
   return await ProfileRepository.findAll();
 };
 
-const getProfileStravaAccessToken = async (
+const getProfileByStravaId = async (
   stravaAthleteId: number,
-): Promise<string | null> => {
+): Promise<ProfileDto | null> => {
   const profile: Profile | null =
     await ProfileRepository.findOneByStravaProfileId(stravaAthleteId);
   if (!profile) {
     console.log(`Profile with strava ID ${stravaAthleteId} not found`);
     return null;
   }
-  return getOrRefreshAccessToken(profile);
+  return refreshProfileAccessToken(profile);
 };
 
 const getProfileById = async (
@@ -25,22 +25,18 @@ const getProfileById = async (
   return await ProfileRepository.findOneById(profileId);
 };
 
-const getProfileByStravaId = async (
-  stravaId: number,
-): Promise<ProfileDto | null> => {
-  return await ProfileRepository.findOneByStravaProfileId(stravaId);
-};
-
 const updateProfile = async (
   profileDto: ProfileDto,
-): Promise<Profile | null> => {
-  return await ProfileRepository.update(profileDto);
+): Promise<ProfileDto | null> => {
+  const profile = await ProfileRepository.update(profileDto);
+  return profile?.toDto() || null;
 };
 
 const createProfile = async (
   profileDto: ProfileDto,
-): Promise<Profile | null> => {
-  return await ProfileRepository.create(profileDto);
+): Promise<ProfileDto | null> => {
+  const profile = await ProfileRepository.create(profileDto);
+  return profile?.toDto() || null;
 };
 
 const handleProfileStravaOAuth = async (
@@ -78,5 +74,4 @@ export const ProfileService = {
   getProfileByStravaId,
   updateProfile,
   updateStravaAuthOrCreateProfile: handleProfileStravaOAuth,
-  getProfileStravaAccessToken,
 };
