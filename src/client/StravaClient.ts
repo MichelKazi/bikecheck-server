@@ -70,8 +70,22 @@ export const getStravaActivityById = async (
         headers: { Authorization: `Bearer ${accessToken}` },
       },
     );
-    console.log(response);
+    console.log(response.data);
   } catch (error) {
     console.error(`Failed to fetch activity ${activityId}: ${error}`);
+  }
+};
+
+export const getStravaActivitiesFromDateRange = async (accessToken: string) => {
+  try {
+    const response = await axios.get(
+      `${stravaApiV3BaseResource}/athlete/activities`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
+    console.log(response.data);
+  } catch (error) {
+    console.error(`Failed to fetch activities: ${error}`);
   }
 };

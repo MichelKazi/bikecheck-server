@@ -2,17 +2,17 @@ openapi: 3.0.0
 info:
   title: BikeTracker API
   version: 1.0.0
-  description: API for managing users, their bikes, and bike components.
+  description: API for managing profiles, their bikes, and bike components.
 
 servers:
   - url: https://api.yourbiketracker.com/
     description: Production server
 
 paths:
-  /users:
+  /profiles:
     post:
-      summary: Create a new user
-      operationId: createUser
+      summary: Create a new profile
+      operationId: createProfile
       requestBody:
         required: true
         content:
@@ -31,26 +31,26 @@ paths:
                 - email
                 - password
       responses:
-        '201':
+        "201":
           description: User created successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  userId:
+                  profileId:
                     type: string
                   message:
                     type: string
-        '400':
+        "400":
           description: Invalid request data
 
-  /users/{userId}/bikes:
+  /profiles/{profileId}/bikes:
     post:
       summary: Add a bike to a user
       operationId: addBike
       parameters:
-        - name: userId
+        - name: profileId
           in: path
           required: true
           description: The user ID
@@ -77,7 +77,7 @@ paths:
                 - year
                 - type
       responses:
-        '201':
+        "201":
           description: Bike added successfully
           content:
             application/json:
@@ -88,17 +88,17 @@ paths:
                     type: string
                   message:
                     type: string
-        '400':
+        "400":
           description: Invalid request data
-        '404':
+        "404":
           description: User not found
 
-  /users/{userId}/bikes/{bikeId}/components:
+  /profiles/{profileId}/bikes/{bikeId}/components:
     post:
       summary: Add a component to a bike
       operationId: addComponent
       parameters:
-        - name: userId
+        - name: profileId
           in: path
           required: true
           description: The user ID
@@ -130,7 +130,7 @@ paths:
                 - status
                 - lastServiced
       responses:
-        '201':
+        "201":
           description: Component added successfully
           content:
             application/json:
@@ -141,7 +141,7 @@ paths:
                     type: string
                   message:
                     type: string
-        '400':
+        "400":
           description: Invalid request data
-        '404':
+        "404":
           description: User or Bike not found

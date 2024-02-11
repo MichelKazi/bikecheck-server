@@ -43,7 +43,7 @@ const createProfile = async (
   return await ProfileRepository.create(profileDto);
 };
 
-const updateStravaAuthOrCreateProfile = async (
+const handleProfileStravaOAuth = async (
   stravaAuthPayload: StravaAuthDto,
 ): Promise<Profile | null> => {
   let profile = await ProfileRepository.findOneByStravaProfileId(
@@ -77,6 +77,6 @@ export const ProfileService = {
   getProfileById,
   getProfileByStravaId,
   updateProfile,
-  updateStravaAuthOrCreateProfile,
+  updateStravaAuthOrCreateProfile: handleProfileStravaOAuth,
   getProfileStravaAccessToken,
 };
