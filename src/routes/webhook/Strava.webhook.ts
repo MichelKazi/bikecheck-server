@@ -2,7 +2,7 @@ import { Context, Hono } from "hono";
 import Env from "../../config/env";
 import { StravaWebhookEventDTO } from "../../dto/StravaWebhookDto";
 import { ProfileService } from "../../service/ProfileService";
-import { getStravaActivityById } from "../../client/StravaClient";
+import { getStravaActivityById } from "../../service/StravaService";
 import { ProfileDto } from "../../models/Profile/Profile";
 const stravaWebhook = new Hono();
 
@@ -47,7 +47,6 @@ const handleWebhookCallback = async (ctx: Context) => {
 };
 
 stravaWebhook.post("/strava", handleActivityUpdate);
-
 stravaWebhook.get("/strava", handleWebhookCallback);
 
 export { stravaWebhook };

@@ -1,7 +1,7 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import Env from "../config/env";
-import { Profile, ProfileDto } from "../models/Profile/Profile";
-import { ProfileService } from "../service/ProfileService";
+import { ProfileDto } from "../models/Profile/Profile";
+import { ProfileService } from "./ProfileService";
 import { StravaAuthDto } from "../dto/StravaAuthDto";
 
 const stravaAuthResource = "https://www.strava.com/oauth/token";
@@ -12,9 +12,15 @@ const stravaClientConfig = {
   client_secret: Env.STRAVA_CLIENT_SECRET,
 };
 
-export const authorizeStravaUser = async (
+export interface StravaTokens {
+  strava_auth_expires_at: number;
+  strava_refresh_token: string;
+  strava_access_token: string;
+}
+
+const authorizeStravaUser = async (
   code: string | undefined,
-): Promise<Profile | null> => {
+): Promise<ProfileDto | null> => {
   try {
     const authResponse = await axios.post(stravaAuthResource, {
       ...stravaClientConfig,
@@ -23,39 +29,54 @@ export const authorizeStravaUser = async (
     });
 
     const authPayload: StravaAuthDto = authResponse.data;
-    return await ProfileService.updateStravaAuthOrCreateProfile(authPayload);
-  } catch (error) {
+    const profile = await ProfileService.handleProfileStravaOAuth(authPayload);
+    return profile?.toDto() ?? null;
+  } catch (error: unknown) {
     console.log("Failed to authenticate with Strava");
+    if (error instanceof AxiosError) {
+      console.log(error?.response?.data);
+    }
+
     return null;
   }
 };
 
-export const refreshProfileAccessToken = async (
-  profile: Profile,
-): Promise<ProfileDto | null> => {
-  const strava_auth_expires_at = profile?.strava_auth_expires_at;
-  const refresh_token = profile?.strava_refresh_token;
-  if (
-    strava_auth_expires_at &&
-    strava_auth_expires_at <= Math.floor(Date.now() / 1000)
-  ) {
+export const getUnexpiredTokens = async (
+  authData: StravaTokens,
+): Promise<StravaTokens | null> => {
+  if (isAuthExpired(authData.strava_auth_expires_at)) {
     try {
       const authResponse = await axios.post(stravaAuthResource, {
         ...stravaClientConfig,
         grant_type: "refresh_token",
-        refresh_token: refresh_token,
+        refresh_token: authData.strava_refresh_token,
       });
-      const authPayload = authResponse.data;
-      const profile: Profile | null =
-        await ProfileService.updateStravaAuthOrCreateProfile(authPayload);
-
-      return profile?.toDto() || null;
+      return authResponse.data;
     } catch (error) {
       console.error("Failed to refresh Strava auth", error);
       return null;
     }
   }
-  return profile?.toDto();
+  return authData;
+};
+
+const isAuthExpired = (expiresAt: number | undefined): boolean => {
+  if (!expiresAt) return true;
+  return expiresAt <= Math.floor(Date.now() / 1000);
+};
+
+export const getProfileWithRefreshedAuth = async (
+  profile: ProfileDto,
+): Promise<ProfileDto> => {
+  const tokens = await getUnexpiredTokens({
+    strava_auth_expires_at: profile?.strava_auth_expires_at ?? 0,
+    strava_refresh_token: profile?.strava_refresh_token ?? "",
+    strava_access_token: profile?.strava_access_token ?? "",
+  });
+  return {
+    ...profile,
+    ...tokens,
+  };
 };
 
 export const getStravaActivityById = async (
@@ -63,7 +84,6 @@ export const getStravaActivityById = async (
   accessToken: string,
 ): Promise<void> => {
   try {
-    console.log(activityId);
     const response = await axios.get(
       `${stravaApiV3BaseResource}/activities/${activityId}`,
       {
@@ -88,4 +108,13 @@ export const getStravaActivitiesFromDateRange = async (accessToken: string) => {
   } catch (error) {
     console.error(`Failed to fetch activities: ${error}`);
   }
+};
+
+export const StravaService = {
+  authorizeStravaUser,
+  isAuthExpired,
+  getUnexpiredTokens,
+  getProfileWithRefreshedAuth,
+  getStravaActivityById,
+  getStravaActivitiesFromDateRange,
 };

@@ -1,4 +1,4 @@
-import { refreshProfileAccessToken } from "../client/StravaClient";
+import { StravaService } from "./StravaService";
 import { StravaAuthDto } from "../dto/StravaAuthDto";
 import { Profile, ProfileDto } from "../models/Profile/Profile";
 import ProfileRepository from "../repository/ProfileRepository";
@@ -16,7 +16,7 @@ const getProfileByStravaId = async (
     console.log(`Profile with strava ID ${stravaAthleteId} not found`);
     return null;
   }
-  return refreshProfileAccessToken(profile);
+  return await updateStravaTokens(profile);
 };
 
 const getProfileById = async (
@@ -39,6 +39,15 @@ const createProfile = async (
   return profile?.toDto() || null;
 };
 
+const updateStravaTokens = async (profile: ProfileDto): Promise<ProfileDto> => {
+  if (StravaService.isAuthExpired(profile?.strava_auth_expires_at)) {
+    const refreshedProfile =
+      await StravaService.getProfileWithRefreshedAuth(profile);
+    await ProfileRepository.update(refreshedProfile);
+  }
+  return profile;
+};
+
 const handleProfileStravaOAuth = async (
   stravaAuthPayload: StravaAuthDto,
 ): Promise<Profile | null> => {
@@ -57,13 +66,12 @@ const handleProfileStravaOAuth = async (
     };
 
     profile = await ProfileRepository.update(dto);
-  }
-  if (!profile) {
+  } else if (!profile) {
     dto.first_name = stravaAuthPayload.athlete.firstname;
     dto.username = stravaAuthPayload.athlete.username;
+    dto.strava_athlete_id = stravaAuthPayload.athlete.id;
     profile = await ProfileRepository.create(dto);
   }
-
   return profile;
 };
 
@@ -73,5 +81,5 @@ export const ProfileService = {
   getProfileById,
   getProfileByStravaId,
   updateProfile,
-  updateStravaAuthOrCreateProfile: handleProfileStravaOAuth,
+  handleProfileStravaOAuth,
 };

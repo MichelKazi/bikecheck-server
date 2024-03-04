@@ -3,7 +3,7 @@ import { jwt } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
 import { logger } from "hono/logger";
 import { stravaWebhook } from "../routes/webhook/Strava.webhook";
-import { stravaAuthRouter } from "../routes/Auth/strava.auth";
+import { stravaAuthRouter } from "../routes/strava.auth";
 import Env from "../config/env";
 
 const app = new Hono();

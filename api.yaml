@@ -1,147 +1,173 @@
 openapi: 3.0.0
 info:
-  title: BikeTracker API
-  version: 1.0.0
-  description: API for managing profiles, their bikes, and bike components.
+  title: "BikeCheck (Name TBD)"
+  version: "1.0"
+  description: "An API to figure out when the fuck I need to take care of my bike"
 
 servers:
-  - url: https://api.yourbiketracker.com/
-    description: Production server
-
+  - url: "http://localhost:3000/api"
 paths:
   /profiles:
-    post:
-      summary: Create a new profile
-      operationId: createProfile
+    get:
+      summary: Get all profiles
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          description: A list of profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
+  /profiles/{profileId}:
+    get:
+      summary: Get a profile by ID
+      security:
+        - jwtAuth: []
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A single profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+    put:
+      summary: Update a profile by ID
+      security:
+        - jwtAuth: []
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
-              required:
-                - username
-                - email
-                - password
+              $ref: "#/components/schemas/Profile"
       responses:
-        "201":
-          description: User created successfully
+        "200":
+          description: Updated profile
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  profileId:
-                    type: string
-                  message:
-                    type: string
-        "400":
-          description: Invalid request data
-
+                $ref: "#/components/schemas/Profile"
   /profiles/{profileId}/bikes:
-    post:
-      summary: Add a bike to a user
-      operationId: addBike
+    get:
+      summary: Get all bikes for a profile
+      security:
+        - jwtAuth: []
       parameters:
-        - name: profileId
-          in: path
+        - in: path
+          name: profileId
           required: true
-          description: The user ID
           schema:
-            type: string
+            type: integer
+      responses:
+        "200":
+          description: A list of bikes for the profile
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bike"
+    post:
+      summary: Add a new bike to a profile
+      security:
+        - jwtAuth: []
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                make:
-                  type: string
-                model:
-                  type: string
-                year:
-                  type: integer
-                type:
-                  type: string
-              required:
-                - make
-                - model
-                - year
-                - type
+              $ref: "#/components/schemas/Bike"
       responses:
         "201":
-          description: Bike added successfully
+          description: New bike created
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  bikeId:
-                    type: string
-                  message:
-                    type: string
-        "400":
-          description: Invalid request data
-        "404":
-          description: User not found
-
-  /profiles/{profileId}/bikes/{bikeId}/components:
-    post:
-      summary: Add a component to a bike
-      operationId: addComponent
+                $ref: "#/components/schemas/Bike"
+  /bikes/{bikeId}/components:
+    get:
+      summary: Get all components for a bike
+      security:
+        - jwtAuth: []
       parameters:
-        - name: profileId
-          in: path
+        - in: path
+          name: bikeId
           required: true
-          description: The user ID
           schema:
-            type: string
-        - name: bikeId
-          in: path
-          required: true
-          description: The bike ID
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                type:
-                  type: string
-                status:
-                  type: number
-                  format: float
-                lastServiced:
-                  type: string
-                  format: date
-              required:
-                - type
-                - status
-                - lastServiced
+            type: integer
       responses:
-        "201":
-          description: Component added successfully
+        "200":
+          description: A list of components for the bike
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  componentId:
-                    type: string
-                  message:
-                    type: string
-        "400":
-          description: Invalid request data
-        "404":
-          description: User or Bike not found
+                type: array
+                items:
+                  $ref: "#/components/schemas/Component"
+components:
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        bikes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Bike"
+    Bike:
+      type: object
+      properties:
+        id:
+          type: integer
+        make:
+          type: string
+        model:
+          type: string
+        profileId:
+          type: integer
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/Component"
+    Component:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        status:
+          type: string
+        bikeId:
+          type: integer
